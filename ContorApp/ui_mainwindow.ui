@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>850</width>
+    <height>750</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Monitorizare Multi-Contor Modbus RTU</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+
+    <!-- TITLU ȘI STATUS GENERAL -->
+    <item>
+     <widget class="QLabel" name="label_Title">
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Monitorizare Rețea Contoare Eaton PXR</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_Status">
+      <property name="text">
+       <string>Status Rețea: Deconectat</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_Connect">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Conectare la Magistrala Modbus</string>
+      </property>
+     </widget>
+    </item>
+
+    <!-- LISTA CONTORILOR (Table Widget) -->
+    <item>
+     <widget class="QGroupBox" name="groupBox_MeterList">
+      <property name="title">
+       <string>Lista Contoarelor (10 Unități)</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QTableWidget" name="tableWidget_Meters">
+         <property name="columnCount">
+          <number>4</number>
+         </property>
+         <column>
+          <property name="text">
+           <string>ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Stare</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Frecvență</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Detalii</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+    <!-- LOG COMUNICARE -->
+    <item>
+     <widget class="QGroupBox" name="groupBox_Log">
+      <property name="title">
+       <string>Log Comunicare</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_Log">
+       <item>
+        <widget class="QTextEdit" name="textEdit_Log">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>150</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
