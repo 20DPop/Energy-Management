@@ -63,20 +63,20 @@ class MeterDetailWindow(QDialog):
             self.ui.label_Detail_UL3.setText(f"{voltages.get('L3', 0):.1f} V")
 
         # 2. Puteri
-        powers = self.modbus_client.read_powers_float(self.slave_id)
-        if powers:
-            self.ui.label_Detail_PL1.setText(f"{powers.get('PL1', 0):.2f} kW")
-            self.ui.label_Detail_PL2.setText(f"{powers.get('PL2', 0):.2f} kW")
-            self.ui.label_Detail_PL3.setText(f"{powers.get('PL3', 0):.2f} kW")
-            self.ui.label_Detail_P_Total.setText(f"{powers.get('P_Total', 0):.2f} kW")
-            self.ui.label_Detail_Q_Total.setText(f"{powers.get('Q_Total', 0):.2f} kVAR")
-            # Q L1/L2/L3 nu sunt implementate în ModbusClient, dar le-am adăugat în UI
+        # powers = self.modbus_client.read_powers_float(self.slave_id)
+        # if powers:
+        #     self.ui.label_Detail_PL1.setText(f"{powers.get('PL1', 0):.2f} kW")
+        #     self.ui.label_Detail_PL2.setText(f"{powers.get('PL2', 0):.2f} kW")
+        #     self.ui.label_Detail_PL3.setText(f"{powers.get('PL3', 0):.2f} kW")
+        #     self.ui.label_Detail_P_Total.setText(f"{powers.get('P_Total', 0):.2f} kW")
+        #     self.ui.label_Detail_Q_Total.setText(f"{powers.get('Q_Total', 0):.2f} kVAR")
+        #     # Q L1/L2/L3 nu sunt implementate în ModbusClient, dar le-am adăugat în UI
 
         # 3. Parametri Sistem
-        system_params = self.modbus_client.read_system_params(self.slave_id)
-        if system_params:
-            self.ui.label_Detail_Frequency.setText(f"{system_params.get('Frequency', 0):.1f} Hz")
-            self.ui.label_Detail_PF_Total.setText(f"{system_params.get('PF_Total', 0):.3f}")
+        # system_params = self.modbus_client.read_system_params(self.slave_id)
+        # if system_params:
+        #     self.ui.label_Detail_Frequency.setText(f"{system_params.get('Frequency', 0):.1f} Hz")
+        #     self.ui.label_Detail_PF_Total.setText(f"{system_params.get('PF_Total', 0):.3f}")
 
     @Slot()
     def generate_report(self):

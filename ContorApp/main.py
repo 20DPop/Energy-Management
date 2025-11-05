@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Monitorizare Multi-Contor Modbus")
 
         # --- Setări Multi-Contor ---
-        self.modbus_port = 'COM3'
+        self.modbus_port = 'COM5'
         self.slave_ids = list(range(1, 11))  # ID-urile slave de la 1 la 10
         self.modbus_client = ContorModbusClient(port=self.modbus_port)
 
@@ -103,29 +103,29 @@ class MainWindow(QMainWindow):
         table = self.ui.tableWidget_Meters
 
         for row, slave_id in enumerate(self.slave_ids):
-            params = self.modbus_client.read_system_params(slave_id)
+            # params = self.modbus_client.read_system_params(slave_id)
             currents = self.modbus_client.read_currents_float(slave_id)
             voltages = self.modbus_client.read_voltages_float(slave_id)
-            powers = self.modbus_client.read_powers_float(slave_id)
+            # powers = self.modbus_client.read_powers_float(slave_id)
 
             status_item = table.item(row, 1)
             freq_item = table.item(row, 2)
 
-            read_successful = params and currents and voltages and powers
+            read_successful =  currents and voltages
 
             if read_successful:
 
-                freq = params.get('Frequency')
-                status_item.setText("OK")
-                status_item.setForeground(Qt.darkGreen)
-                freq_item.setText(f"{freq:.1f} Hz")
+                # freq = params.get('Frequency')
+                # status_item.setText("OK")
+                # status_item.setForeground(Qt.darkGreen)
+                # freq_item.setText(f"{freq:.1f} Hz")
 
                 #  COLECTARE DATE PENTRU LOGARE
                 log_data = {
                     'L1_I': currents.get('L1'),
                     'L1_U': voltages.get('L1'),
-                    'P_Total': powers.get('P_Total'),
-                    'Frequency': freq
+                    # 'P_Total': powers.get('P_Total'),
+                    # 'Frequency': freq
                 }
 
                 #  LOGARE ÎN BAZA DE DATE
