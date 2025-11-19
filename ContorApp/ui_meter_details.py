@@ -8,12 +8,16 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication,
-    QMetaObject, Qt)
-from PySide6.QtGui import (QFont )
-from PySide6.QtWidgets import ( QDateTimeEdit,  QGridLayout,
-    QGroupBox,  QLabel, QPushButton, QTextEdit,
-    QVBoxLayout)
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QDialog, QGridLayout,
+    QGroupBox, QLabel, QPushButton, QSizePolicy,
+    QTextEdit, QVBoxLayout, QWidget)
 
 class Ui_MeterDetailDialog(object):
     def setupUi(self, MeterDetailDialog):
@@ -28,7 +32,7 @@ class Ui_MeterDetailDialog(object):
         font.setPointSize(14)
         font.setBold(True)
         self.label_MeterID_Title.setFont(font)
-        self.label_MeterID_Title.setAlignment(Qt.AlignCenter)
+        self.label_MeterID_Title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_main.addWidget(self.label_MeterID_Title)
 
@@ -36,12 +40,53 @@ class Ui_MeterDetailDialog(object):
         self.groupBox_RealTime.setObjectName(u"groupBox_RealTime")
         self.gridLayout_RealTime = QGridLayout(self.groupBox_RealTime)
         self.gridLayout_RealTime.setObjectName(u"gridLayout_RealTime")
+        self.label_Detail_L2_Text = QLabel(self.groupBox_RealTime)
+        self.label_Detail_L2_Text.setObjectName(u"label_Detail_L2_Text")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_L2_Text, 2, 0, 1, 1)
+
+        self.label_Detail_L1_Text = QLabel(self.groupBox_RealTime)
+        self.label_Detail_L1_Text.setObjectName(u"label_Detail_L1_Text")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_L1_Text, 1, 0, 1, 1)
+
+        self.label_Header_Voltage = QLabel(self.groupBox_RealTime)
+        self.label_Header_Voltage.setObjectName(u"label_Header_Voltage")
+        font1 = QFont()
+        self.label_Header_Voltage.setFont(font1)
+
+        self.gridLayout_RealTime.addWidget(self.label_Header_Voltage, 0, 2, 1, 1)
+
+        self.label_Detail_UL3 = QLabel(self.groupBox_RealTime)
+        self.label_Detail_UL3.setObjectName(u"label_Detail_UL3")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_UL3, 3, 2, 1, 1)
+
+        self.label_Detail_UL2 = QLabel(self.groupBox_RealTime)
+        self.label_Detail_UL2.setObjectName(u"label_Detail_UL2")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_UL2, 2, 2, 1, 1)
+
+        self.label_Detail_L3_Text = QLabel(self.groupBox_RealTime)
+        self.label_Detail_L3_Text.setObjectName(u"label_Detail_L3_Text")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_L3_Text, 3, 0, 1, 1)
+
         self.label_Header_Phase = QLabel(self.groupBox_RealTime)
         self.label_Header_Phase.setObjectName(u"label_Header_Phase")
-        font1 = QFont()
         self.label_Header_Phase.setFont(font1)
 
         self.gridLayout_RealTime.addWidget(self.label_Header_Phase, 0, 0, 1, 1)
+
+        self.label_Detail_IL3 = QLabel(self.groupBox_RealTime)
+        self.label_Detail_IL3.setObjectName(u"label_Detail_IL3")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_IL3, 3, 1, 1, 1)
+
+        self.label_Detail_IL1 = QLabel(self.groupBox_RealTime)
+        self.label_Detail_IL1.setObjectName(u"label_Detail_IL1")
+
+        self.gridLayout_RealTime.addWidget(self.label_Detail_IL1, 1, 1, 1, 1)
 
         self.label_Header_Current = QLabel(self.groupBox_RealTime)
         self.label_Header_Current.setObjectName(u"label_Header_Current")
@@ -49,98 +94,15 @@ class Ui_MeterDetailDialog(object):
 
         self.gridLayout_RealTime.addWidget(self.label_Header_Current, 0, 1, 1, 1)
 
-        self.label_Header_Voltage = QLabel(self.groupBox_RealTime)
-        self.label_Header_Voltage.setObjectName(u"label_Header_Voltage")
-        self.label_Header_Voltage.setFont(font1)
-
-        self.gridLayout_RealTime.addWidget(self.label_Header_Voltage, 0, 2, 1, 1)
-
-        self.label_Header_Power = QLabel(self.groupBox_RealTime)
-        self.label_Header_Power.setObjectName(u"label_Header_Power")
-        self.label_Header_Power.setFont(font1)
-
-        self.gridLayout_RealTime.addWidget(self.label_Header_Power, 0, 3, 1, 1)
-
-        self.label_Header_Reactive = QLabel(self.groupBox_RealTime)
-        self.label_Header_Reactive.setObjectName(u"label_Header_Reactive")
-        self.label_Header_Reactive.setFont(font1)
-
-        self.gridLayout_RealTime.addWidget(self.label_Header_Reactive, 0, 4, 1, 1)
-
-        self.label_Detail_L1_Text = QLabel(self.groupBox_RealTime)
-        self.label_Detail_L1_Text.setObjectName(u"label_Detail_L1_Text")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_L1_Text, 1, 0, 1, 1)
-
-        self.label_Detail_IL1 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_IL1.setObjectName(u"label_Detail_IL1")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_IL1, 1, 1, 1, 1)
-
         self.label_Detail_UL1 = QLabel(self.groupBox_RealTime)
         self.label_Detail_UL1.setObjectName(u"label_Detail_UL1")
 
         self.gridLayout_RealTime.addWidget(self.label_Detail_UL1, 1, 2, 1, 1)
 
-        self.label_Detail_PL1 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_PL1.setObjectName(u"label_Detail_PL1")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_PL1, 1, 3, 1, 1)
-
-        self.label_Detail_QL1 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_QL1.setObjectName(u"label_Detail_QL1")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_QL1, 1, 4, 1, 1)
-
-        self.label_Detail_L2_Text = QLabel(self.groupBox_RealTime)
-        self.label_Detail_L2_Text.setObjectName(u"label_Detail_L2_Text")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_L2_Text, 2, 0, 1, 1)
-
         self.label_Detail_IL2 = QLabel(self.groupBox_RealTime)
         self.label_Detail_IL2.setObjectName(u"label_Detail_IL2")
 
         self.gridLayout_RealTime.addWidget(self.label_Detail_IL2, 2, 1, 1, 1)
-
-        self.label_Detail_UL2 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_UL2.setObjectName(u"label_Detail_UL2")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_UL2, 2, 2, 1, 1)
-
-        self.label_Detail_PL2 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_PL2.setObjectName(u"label_Detail_PL2")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_PL2, 2, 3, 1, 1)
-
-        self.label_Detail_QL2 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_QL2.setObjectName(u"label_Detail_QL2")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_QL2, 2, 4, 1, 1)
-
-        self.label_Detail_L3_Text = QLabel(self.groupBox_RealTime)
-        self.label_Detail_L3_Text.setObjectName(u"label_Detail_L3_Text")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_L3_Text, 3, 0, 1, 1)
-
-        self.label_Detail_IL3 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_IL3.setObjectName(u"label_Detail_IL3")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_IL3, 3, 1, 1, 1)
-
-        self.label_Detail_UL3 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_UL3.setObjectName(u"label_Detail_UL3")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_UL3, 3, 2, 1, 1)
-
-        self.label_Detail_PL3 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_PL3.setObjectName(u"label_Detail_PL3")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_PL3, 3, 3, 1, 1)
-
-        self.label_Detail_QL3 = QLabel(self.groupBox_RealTime)
-        self.label_Detail_QL3.setObjectName(u"label_Detail_QL3")
-
-        self.gridLayout_RealTime.addWidget(self.label_Detail_QL3, 3, 4, 1, 1)
 
 
         self.verticalLayout_main.addWidget(self.groupBox_RealTime)
@@ -240,26 +202,18 @@ class Ui_MeterDetailDialog(object):
         MeterDetailDialog.setWindowTitle(QCoreApplication.translate("MeterDetailDialog", u"Detalii Contor - ID [Dynamic]", None))
         self.label_MeterID_Title.setText(QCoreApplication.translate("MeterDetailDialog", u"Contor Detalii (Slave ID: --)", None))
         self.groupBox_RealTime.setTitle(QCoreApplication.translate("MeterDetailDialog", u"Date Instantanee", None))
-        self.label_Header_Phase.setText(QCoreApplication.translate("MeterDetailDialog", u"Faz\u0103", None))
-        self.label_Header_Current.setText(QCoreApplication.translate("MeterDetailDialog", u"Curent (I) [A]", None))
-        self.label_Header_Voltage.setText(QCoreApplication.translate("MeterDetailDialog", u"Tensiune (U) [V]", None))
-        self.label_Header_Power.setText(QCoreApplication.translate("MeterDetailDialog", u"Putere Activ\u0103 (P) [kW]", None))
-        self.label_Header_Reactive.setText(QCoreApplication.translate("MeterDetailDialog", u"Putere Reactiv\u0103 (Q) [kVAR]", None))
-        self.label_Detail_L1_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"L1", None))
-        self.label_Detail_IL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
-        self.label_Detail_UL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- V", None))
-        self.label_Detail_PL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kW", None))
-        self.label_Detail_QL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kVAR", None))
         self.label_Detail_L2_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"L2", None))
-        self.label_Detail_IL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
-        self.label_Detail_UL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- V", None))
-        self.label_Detail_PL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kW", None))
-        self.label_Detail_QL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kVAR", None))
-        self.label_Detail_L3_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"L3", None))
-        self.label_Detail_IL3.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
+        self.label_Detail_L1_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"L1", None))
+        self.label_Header_Voltage.setText(QCoreApplication.translate("MeterDetailDialog", u"Tensiune (U) [V]", None))
         self.label_Detail_UL3.setText(QCoreApplication.translate("MeterDetailDialog", u"--- V", None))
-        self.label_Detail_PL3.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kW", None))
-        self.label_Detail_QL3.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kVAR", None))
+        self.label_Detail_UL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- V", None))
+        self.label_Detail_L3_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"L3", None))
+        self.label_Header_Phase.setText(QCoreApplication.translate("MeterDetailDialog", u"Faz\u0103", None))
+        self.label_Detail_IL3.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
+        self.label_Detail_IL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
+        self.label_Header_Current.setText(QCoreApplication.translate("MeterDetailDialog", u"Curent (I) [A]", None))
+        self.label_Detail_UL1.setText(QCoreApplication.translate("MeterDetailDialog", u"--- V", None))
+        self.label_Detail_IL2.setText(QCoreApplication.translate("MeterDetailDialog", u"--- A", None))
         self.groupBox_Totals.setTitle(QCoreApplication.translate("MeterDetailDialog", u"Totaluri \u0219i Parametri Sistem", None))
         self.label_TotalP_Text.setText(QCoreApplication.translate("MeterDetailDialog", u"Putere Activ\u0103 Total\u0103 (\u03a3P):", None))
         self.label_Detail_P_Total.setText(QCoreApplication.translate("MeterDetailDialog", u"--- kW", None))
@@ -274,5 +228,5 @@ class Ui_MeterDetailDialog(object):
         self.label_End.setText(QCoreApplication.translate("MeterDetailDialog", u"Data Sf\u00e2r\u0219it:", None))
         self.pushButton_GenerateReport.setText(QCoreApplication.translate("MeterDetailDialog", u"Genereaz\u0103 Raport / Afi\u0219eaz\u0103 Grafic", None))
         self.textEdit_HistoryOutput.setPlaceholderText(QCoreApplication.translate("MeterDetailDialog", u"Datele istorice vor fi afi\u0219ate aici...", None))
-
+    # retranslateUi
 

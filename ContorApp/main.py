@@ -1,55 +1,88 @@
 import sys
-# [MODIFICAT] Am adăugat QMessageBox pentru mesajul de avertizare
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QMessageBox
-from PySide6.QtCore import QTimer, Slot, Qt
-from PySide6.QtWidgets import QAbstractItemView
+import logging  # <-- 1. Importă modulul logging
+
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem,
+                               QPushButton, QWidget, QHBoxLayout, QAbstractItemView)
+from PySide6.QtCore import QTimer, Slot, Qt, QThread, Signal
 
 from data_logger import DataLogger
 from ui_mainwindow import Ui_MainWindow
-from modbus_client import ContorModbusClient
+# Importăm Worker-ul, nu clientul direct
+from modbus_worker import ModbusWorker
 from meter_detail_window import MeterDetailWindow
+log = logging.getLogger('MainWindow')
+log.setLevel(logging.INFO)
 
 DEFAULT_METER_DATA = {
     'frequency': '---',
-    'status': 'Necunoscut', # Vom folosi 'Necunoscut', 'ON', 'OFF'
+    'status': 'Necunoscut',
     'last_read': 'N/A'
 }
 
 
 class MainWindow(QMainWindow):
+    # Semnale pentru a porni/opri worker-ul
+    start_worker_polling = Signal()
+    stop_worker_polling = Signal()
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.setWindowTitle("Monitorizare Multi-Contor Modbus")
+        self.setWindowTitle("Monitorizare Multi-Contor Modbus (Multi-Threaded)")
 
-        # --- Setări Multi-Contor ---
-        self.modbus_port = 'COM5'
-        self.slave_ids = list(range(1, 21))  # ID-urile slave de la 1 la 10
-        self.modbus_client = ContorModbusClient(port=self.modbus_port)
+        self.modbus_port = 'COM5'  # Asigură-te că acesta e portul corect
+        self.slave_ids = list(range(1, 21))
 
-        # Stocarea datelor citite
         self.meter_data = {sid: DEFAULT_METER_DATA.copy() for sid in self.slave_ids}
 
-        # --- Timer și Conexiuni ---
+        # Timer-ul va porni worker-ul
         self.read_timer = QTimer(self)
-        self.read_timer.timeout.connect(self.update_all_meters)
-        self.timer_interval_ms = 3000  # Citire la fiecare 3 secunde
+        self.timer_interval_ms = 3000  # 5 secunde
+        self.read_timer.timeout.connect(self.run_worker_cycle)
+
+        # Configurarea Worker Thread
+        self.setup_worker_thread()
 
         self.ui.pushButton_Connect.clicked.connect(self.toggle_connection)
         self.is_connected = False
-        self.data_logger= DataLogger()
+        self.data_logger = DataLogger()
         self.log_message("Aplicație pornită.")
+
+        # --- APELUL CARE CAUZA EROAREA ---
+        # Acum funcția de mai jos există
         self.setup_meter_table()
 
+    def setup_worker_thread(self):
+        """Creează worker-ul și thread-ul pe care va rula."""
+        self.worker_thread = QThread()
+        self.worker = ModbusWorker(
+            port=self.modbus_port,
+            slave_ids=self.slave_ids,
+            interval_ms=self.timer_interval_ms
+        )
+        self.worker.moveToThread(self.worker_thread)
+
+        # Conectăm semnalele
+        self.worker_thread.started.connect(self.worker.start_polling)
+        self.worker.cycle_finished.connect(self.update_table_from_data)
+        self.worker.log_message.connect(self.log_message)
+        self.start_worker_polling.connect(self.worker.run_read_cycle)
+        self.stop_worker_polling.connect(self.worker.stop_polling)
+
+        self.worker_thread.start()
+
+    # --- FUNCȚIA LIPSA A FOST ADĂUGATĂ AICI ---
     def setup_meter_table(self):
-        """[MODIFICAT] Configurează QTableWidget și inițializează celulele de status."""
+        """Configurează QTableWidget cu 10 rânduri și butoane."""
         table = self.ui.tableWidget_Meters
         table.setRowCount(len(self.slave_ids))
-        table.setHorizontalHeaderLabels(["ID Slave", "Stare", "Frecvență", "Acțiune"])
+        table.setHorizontalHeaderLabels(["ID Slave", "Status Conexiune", "L1 Curent [A]", "Acțiune"])
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        table.setColumnWidth(1, 150) # Am ajustat puțin lățimea
+        table.setColumnWidth(1, 150)
+        table.setColumnWidth(2, 120)
 
         for row, slave_id in enumerate(self.slave_ids):
             # Coloana 0: ID Slave
@@ -57,19 +90,19 @@ class MainWindow(QMainWindow):
             item_id.setTextAlignment(Qt.AlignCenter)
             table.setItem(row, 0, item_id)
 
-            # [ADAUGAT] Inițializăm celulele pentru Stare și Frecvență
-            # Acest pas este CRITIC. Fără el, .item(row, 1) ar fi None și ar da crash.
-            item_status = QTableWidgetItem("Necunoscut")
-            item_status.setTextAlignment(Qt.AlignCenter)
+            # Coloana 1: Status
+            item_status = QTableWidgetItem("Deconectat")
+            item_status.setForeground(Qt.gray)
             table.setItem(row, 1, item_status)
 
-            item_freq = QTableWidgetItem("---")
-            item_freq.setTextAlignment(Qt.AlignCenter)
-            table.setItem(row, 2, item_freq)
+            # Coloana 2: Date
+            item_data = QTableWidgetItem("--- A")
+            table.setItem(row, 2, item_data)
 
             # Coloana 3: Buton Detalii
             self.add_details_button(row, slave_id)
 
+    # --- FUNCȚIA LIPSA A FOST ADĂUGATĂ AICI ---
     def add_details_button(self, row, slave_id):
         """Adaugă butonul de Detalii în ultima coloană."""
         widget = QWidget()
@@ -84,131 +117,180 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def toggle_connection(self):
+        """Acum doar pornește/oprește QTimer-ul."""
         if not self.is_connected:
-            self.log_message(f"Se încearcă conectarea la {self.modbus_port}...")
-            if self.modbus_client.connect():
-                self.log_message("Conexiune Modbus reușită. Se pornește citirea ciclincă.")
-                self.ui.pushButton_Connect.setText("Deconectare")
-                self.is_connected = True
-                self.read_timer.start(self.timer_interval_ms)
-                self.update_all_meters() # Rulăm o dată imediat
-            else:
-                self.log_message("Conectarea a eșuat.")
+            self.log_message(f"Se pornește citirea ciclincă (la fiecare {self.timer_interval_ms} ms)...")
+            self.read_timer.start(self.timer_interval_ms)
+            self.ui.pushButton_Connect.setText("Deconectare")
+            self.is_connected = True
+            # Cerem o citire imediată, fără a aștepta timer-ul
+            self.run_worker_cycle()
         else:
+            self.log_message("Se oprește citirea ciclincă...")
             self.read_timer.stop()
-            self.modbus_client.disconnect()
-            self.log_message("Deconectat.")
-            self.ui.pushButton_Connect.setText("Conectare la Magistrala Modbus")
+            self.ui.pushButton_Connect.setText("Conectare")
             self.is_connected = False
             self.update_ui_disconnected()
 
     @Slot()
-    def update_all_meters(self):
-        """[MODIFICAT] Citirea ciclică și actualizarea stării ON/OFF."""
-        if not self.is_connected:
-            return
+    def run_worker_cycle(self):
+        """Slot apelat de QTimer. Emite un semnal către worker."""
+        self.start_worker_polling.emit()
 
-        self.log_message("Începe ciclul de citire pentru 10 contoare...")
+    @Slot(object)
+    def update_table_from_data(self, results):
+        """
+        PRIMEȘTE datele de la worker thread și actualizează UI-ul.
+        Această funcție rulează în siguranță pe Main Thread.
+        """
+        self.log_message("Ciclu de citire terminat. Se actualizează tabelul...")
         table = self.ui.tableWidget_Meters
 
         for row, slave_id in enumerate(self.slave_ids):
-            # Citim datele esențiale
-            currents = self.modbus_client.read_currents_float(slave_id)
-            voltages = self.modbus_client.read_voltages_float(slave_id)
-            
-            # (Puteți decomenta citirea parametrilor dacă o reparați în modbus_client.py)
-            # params = self.modbus_client.read_system_params(slave_id) 
+            data = results.get(slave_id, {"status": "Eroare"})
 
-            # Recuperăm item-urile din tabel (acum sunt garantat să existe)
             status_item = table.item(row, 1)
-            freq_item = table.item(row, 2)
+            data_item = table.item(row, 2)
 
-            # Verificăm dacă citirea a fost un succes
-            read_successful = currents and voltages # (și 'params' dacă decomentați)
-
-            if read_successful:
-                # [MODIFICAT] Setăm starea ca ON (Activ)
-                self.meter_data[slave_id]['status'] = 'ON'
-                status_item.setText("ON")
+            if data["status"] == "OK":
+                status_item.setText("OK")
                 status_item.setForeground(Qt.darkGreen)
-                
-                # freq = params.get('Frequency', 0.0)
-                # freq_item.setText(f"{freq:.1f} Hz")
-                # self.meter_data[slave_id]['frequency'] = freq
+                current_l1 = data["currents"].get('L1', 0)
+                data_item.setText(f"{current_l1:.1f} A")
 
-                #  COLECTARE DATE PENTRU LOGARE
+                # Logarea în baza de date
                 log_data = {
-                    'L1_I': currents.get('L1'),
-                    'L1_U': voltages.get('L1'),
-                    # 'P_Total': powers.get('P_Total'),
-                    # 'Frequency': freq
+                    'L1_I': data["currents"].get('L1'),
+                    'L2_I': data["currents"].get('L2'),
+                    'L3_I': data["currents"].get('L3'),
+                    'L1L2_U': data["voltages"].get('L1L2'),
+                    'L2L3_U': data["voltages"].get('L2L3'),
+                    'L3L1_U': data["voltages"].get('L3L1')
                 }
-                self.data_logger.log_reading(slave_id, log_data)
+                # self.data_logger.log_reading(slave_id, log_data) # Activat
 
-            else:
-                # [MODIFICAT] Setăm starea ca OFF (Inactiv / Eroare)
-                self.meter_data[slave_id]['status'] = 'OFF'
-                status_item.setText("OFF")
+            else:  # data["status"] == "Eroare"
+                status_item.setText("Eroare comunicare")
                 status_item.setForeground(Qt.red)
-                freq_item.setText("--- Hz")
+                data_item.setText("--- A")
 
-        self.ui.label_Status.setText("Status Rețea: Citire în desfășurare")
-        self.log_message("Ciclul de citire a fost finalizat și datele au fost logate.")
-        
+        self.ui.label_Status.setText("Status Rețea: Așteaptă următorul ciclu...")
+
     @Slot()
     def show_meter_details(self, slave_id):
         """
-        [MODIFICAT] Deschide fereastra de detalii DOAR dacă contorul este 'ON'.
-        Altfel, afișează un mesaj de avertizare.
+        Atenție: Trimiterea clientului Modbus către altă fereastră
+        poate cauza conflicte de thread dacă ambele încearcă să-l folosească simultan.
         """
-
-        # [ADAUGAT] Verificăm starea stocată a contorului
-        current_status = self.meter_data.get(slave_id, {}).get('status', 'Necunoscut')
-        
-        if current_status != 'ON':
-            # Dacă starea NU este 'ON', afișăm un mesaj și ieșim din funcție
-            self.log_message(f"Acces blocat: Contorul ID {slave_id} este '{current_status}'.")
-            QMessageBox.warning(
-                self,
-                "Contor Offline",
-                f"Contorul cu ID-ul {slave_id} nu este conectat sau nu răspunde (Status: {current_status}).\n\n"
-                "Fereastra de detalii nu poate fi deschisă."
-            )
-            return  # Oprim execuția aici
-            
-        # Acest cod se va executa DOAR dacă starea este 'ON'
-        self.log_message(f"Se deschid detaliile pentru Contor ID {slave_id} (Status: ON).")
+        self.log_message(f"Se deschid detaliile pentru Contor ID {slave_id}.")
 
         details_window = MeterDetailWindow(
             slave_id=slave_id,
-            modbus_client=self.modbus_client,
+            modbus_client=self.worker.modbus_client,  # Trimitem clientul din worker
             parent=self
         )
         details_window.exec()
 
     def update_ui_disconnected(self):
-        """[MODIFICAT] Actualizează UI și starea internă la deconectare."""
-        for row, slave_id in enumerate(self.slave_ids):
-            # Resetăm starea internă
-            self.meter_data[slave_id]['status'] = 'Necunoscut'
-            
-            # Actualizăm celulele din tabel
-            self.ui.tableWidget_Meters.item(row, 1).setText("Deconectat")
-            self.ui.tableWidget_Meters.item(row, 1).setForeground(Qt.gray)
-            self.ui.tableWidget_Meters.item(row, 2).setText("---")
-            
-        self.ui.label_Status.setText("Status Rețea: Deconectat")
+        """Actualizează UI la deconectare."""
 
+        # --- LINIA CARE LIPSEA ---
+        table = self.ui.tableWidget_Meters
+        # -------------------------
+
+        for row in range(len(self.slave_ids)):
+            # Verificăm dacă item-urile există înainte de a le modifica
+            if not table.item(row, 1):
+                table.setItem(row, 1, QTableWidgetItem())
+            if not table.item(row, 2):
+                table.setItem(row, 2, QTableWidgetItem())
+
+            table.item(row, 1).setText("Deconectat")
+            table.item(row, 1).setForeground(Qt.gray)
+            table.item(row, 2).setText("--- A")
+
+        self.ui.label_Status.setText("Status Rețea: Deconectat")
     def log_message(self, message):
         self.ui.textEdit_Log.append(message)
         # print(message)
 
     def closeEvent(self, event):
-        self.data_logger.disconnect()
+        """Oprește corect thread-ul la închidere."""
+        self.log_message("Se închide aplicația...")
         self.read_timer.stop()
-        if self.modbus_client:
-            self.modbus_client.disconnect()
+        self.stop_worker_polling.emit()
+        self.worker_thread.quit()
+        if not self.worker_thread.wait(3000):
+            log.warning("Thread-ul nu s-a oprit la timp, se forțează terminarea.")
+            self.worker_thread.terminate()
+
+        self.data_logger.disconnect()
+        log.info("Închidere finalizată.")
         super().closeEvent(event)
+
+    @Slot(dict)
+    def update_table_from_data(self, results):
+        """
+        Actualizează tabelul cu datele primite de la Worker.
+        Include stilizare vizuală pentru status (ONLINE/OFFLINE).
+        """
+        # self.log_message("Ciclu terminat. Actualizare UI...") # Poți comenta asta să nu umple logul
+        table = self.ui.tableWidget_Meters
+
+        for row, slave_id in enumerate(self.slave_ids):
+            # Obținem rezultatul sau un default de eroare
+            data = results.get(slave_id, {"status": "Eroare"})
+
+            # Ne asigurăm că celulele există
+            if not table.item(row, 1):
+                table.setItem(row, 1, QTableWidgetItem())
+            if not table.item(row, 2):
+                table.setItem(row, 2, QTableWidgetItem())
+
+            status_item = table.item(row, 1)
+            data_item = table.item(row, 2)
+
+            # Resetăm stilul de bază
+            status_item.setTextAlignment(Qt.AlignCenter)
+            data_item.setTextAlignment(Qt.AlignCenter)
+
+            # --- LOGICA VIZUALĂ PENTRU STATUS ---
+            if data["status"] == "OK":
+                # CAZ: ONLINE
+                status_item.setText("ONLINE")
+                # Fundal Verde, Text Alb, Bold
+                status_item.setBackground(QColor("#2ecc71"))  # Verde smarald
+                status_item.setForeground(QColor("white"))
+                status_item.setToolTip("Conexiune stabilă. Datele se actualizează.")
+
+                # Actualizare date
+                current_l1 = data["currents"].get('L1', 0)
+                data_item.setText(f"{current_l1:.2f} A")
+
+                # Logare (opțional)
+                # ... cod logare ...
+
+            elif data["status"] == "Skipped (Offline)":
+                # CAZ: SKIPPED (Cooldown)
+                status_item.setText("OFFLINE (Skip)")
+                # Fundal Galben/Portocaliu
+                status_item.setBackground(QColor("#f39c12"))
+                status_item.setForeground(QColor("white"))
+                status_item.setToolTip("Contorul nu a răspuns anterior. Se așteaptă expirarea timpului de cooldown.")
+
+                data_item.setText("---")
+
+            else:
+                # CAZ: EROARE / TIMEOUT
+                status_item.setText("OFFLINE")
+                # Fundal Roșu
+                status_item.setBackground(QColor("#e74c3c"))
+                status_item.setForeground(QColor("white"))
+                status_item.setToolTip("Contorul nu răspunde la interogare.")
+
+                data_item.setText("---")
+
+        self.ui.label_Status.setText("Status Rețea: Actualizat")
 
 
 if __name__ == "__main__":

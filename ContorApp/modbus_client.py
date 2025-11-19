@@ -20,6 +20,7 @@ class ContorModbusClient:
         log.info(f"Client Modbus inițializat pentru portul {port} la {baudrate} baud.")
 
     def connect(self):
+        """Stabilește conexiunea la portul serial."""
         if self.client and self.client.is_socket_open():
             log.info("Clientul este deja conectat.")
             return True
@@ -29,7 +30,7 @@ class ContorModbusClient:
                                    baudrate=self.baudrate,
                                    parity=self.parity,
                                    stopbits=self.stopbits,
-                                   timeout=1.5)
+                                   timeout=0.5)  # Timeout de 1 secundă e suficient
         try:
             connection = self.client.connect()
             if connection:
@@ -45,34 +46,45 @@ class ContorModbusClient:
             return False
 
     def disconnect(self):
+        """Închide portul serial."""
         if self.client:
             self.client.close()
             log.info("Conexiune Modbus închisă.")
             self.client = None
 
-    def _read_float_registers(self, address, count, slave_address, description):
-        """Funcție utilitară pentru citirea regiștrilor float (IEEE 754)."""
+    def _read_registers(self, address, count, slave_address, description):
+        """Funcție utilitară generală pentru citirea regiștrilor, cu reconectare automată."""
+
+        # --- MODIFICAREA CHEIE: AUTO-RECONNECT ---
+        # Verificăm dacă portul este deschis ÎNAINTE de a încerca să citim.
         if not self.client or not self.client.is_socket_open():
-            log.warning(f"Clientul nu este conectat.")
-            return None
+            log.warning(f"ID {slave_address}: Portul este închis. Se încearcă reconectarea...")
+            # Încercăm să redeschidem portul
+            if not self.connect():
+                log.error(f"ID {slave_address}: Reconectarea a eșuat. Se anulează citirea.")
+                return None
+            log.info(f"ID {slave_address}: Reconectare reușită.")
+        # --- SFÂRȘIT MODIFICARE ---
 
         try:
             # Citim folosind adresa slave specificată (unit)
             print(f"Citire {description} de la contor ID {slave_address}, adresă {address}, count {count}")
             rr = self.client.read_input_registers(address, count, unit=slave_address)
-            print(rr)
+
             if rr.isError():
+                log.warning(f"Contor ID {slave_address}: FC04 eșuat, se încearcă FC03...")
                 rr = self.client.read_holding_registers(address, count, unit=slave_address)
 
                 if rr.isError():
-                    log.error(f"Contor ID {slave_address}: Eroare fatală la citirea {description}: {rr}")
+                    log.error(f"Contor ID {slave_address}: NU RĂSPUNDE la citirea {description}: {rr}")
+                    # Biblioteca va închide portul aici, dar e OK.
+                    # Următorul apel (pt ID 3) îl va redeschide.
                     return None
 
             return rr.registers
 
-        except ConnectionException:
-            log.error(f"Conexiunea Modbus a fost pierdută.")
-            self.disconnect()
+        except ConnectionException as e:
+            log.error(f"Contor ID {slave_address}: Eroare de conexiune (Timeout) la citirea {description}: {e}.")
             return None
         except Exception as e:
             log.error(f"Contor ID {slave_address}: Eroare generală la citirea {description}: {e}")
@@ -80,89 +92,72 @@ class ContorModbusClient:
 
     def read_currents_float(self, slave_address):
         """Citește curenții IL1, IL2, IL3 (404611 => 4610 0-based)."""
-        registers = self._read_float_registers(4610, 6, slave_address, "Curenți")
+        # Citim 6 regiștri (3 float-uri)
+        registers = self._read_registers(4610, 6, slave_address, "Curenți")
+
         if registers:
-            decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            current_l1 = decoder.decode_32bit_float()
-            current_l2 = decoder.decode_32bit_float()
-            current_l3 = decoder.decode_32bit_float()
-            print(f"Curenți citiți: L1={current_l1:.2f} A, L2={current_l2:.2f} A, L3={current_l3:.2f} A")
-            return {"L1": current_l1, "L2": current_l2,
-                    "L3": current_l3}
+            try:
+                decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                data = {}
+                data['L1'] = decoder.decode_32bit_float()
+                data['L2'] = decoder.decode_32bit_float()
+                data['L3'] = decoder.decode_32bit_float()
+                return data
+            except Exception as e:
+                log.error(f"Contor ID {slave_address}: Eroare decodare curenți: {e}")
         return None
 
     def read_voltages_float(self, slave_address):
-        """Citește tensiunile UL1, UL2, UL3 (404602 => 4601 0-based)."""
-        registers = self._read_float_registers(4622, 6, slave_address, "Tensiuni")
+        """Citește tensiunile L-L (404623 => 4622 0-based)."""
+        # Citim 6 regiștri (3 float-uri)
+        registers = self._read_registers(4622, 6, slave_address, "Tensiuni L-L")
+
         if registers:
-            decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            voltage_l1l2 = decoder.decode_32bit_float()
-            voltage_l2l3 = decoder.decode_32bit_float()
-            voltage_l3l1 = decoder.decode_32bit_float()
-
-            print(
-                f"Tensiuni L-L citite: L1-L2={voltage_l1l2:.2f} V, L2-L3={voltage_l2l3:.2f} V, L3-L1={voltage_l3l1:.2f} V")
-            return {"L1L2": voltage_l1l2, "L2L3": voltage_l2l3, "L3L1": voltage_l3l1}
+            try:
+                decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                data = {}
+                data['L1L2'] = decoder.decode_32bit_float()
+                data['L2L3'] = decoder.decode_32bit_float()
+                data['L3L1'] = decoder.decode_32bit_float()
+                return data
+            except Exception as e:
+                log.error(f"Contor ID {slave_address}: Eroare decodare tensiuni: {e}")
         return None
-
-    def read_total_active_energy_kwh(self):
-        """Citește energia activă totală (combinată) în kWh (format Fixed Point)."""
-        address = 6262
-        count = 2  # 1 valoare uint32 * 2 regiștri/valoare
-        registers = self._read_registers(address, count)
-
-        if registers is None:
-            return None
-
-        try:
-            # Decodificăm valoarea uint32 (2 regiștri)
-            # Presupunem Big Endian pentru Byte și Word Order.
-            decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            total_kwh = decoder.decode_32bit_uint()
-
-            # Aplicăm factorul de scalare (care e 1 în acest caz)
-            # total_kwh = total_kwh / 1.0
-
-            log.info(f"Energie activă totală citită: {total_kwh} kWh")
-            return {"Total kWh": total_kwh}
-        except Exception as e:
-            log.error(f"Eroare la decodificarea energiei totale kWh: {e}")
-            return None
-    def read_powers_float(self, slave_address):
-        """Citește Puterile (P total, Q total, P L1, P L2, P L3).
-           ADRESE  (404701 => 4700 0-based pentru P total, 404711 pentru PL1)
+    def read_meter_data_optimized(self, slave_address):
         """
-        #  404701 pentru P Total, 404703 pentru Q Total
-        # Citim P Total (4700), Q Total (4702), Frecvență (4800)
-        address = 4650  # P Total
-        count = 4  # 2 float * 2 = 4 regiștri
-        registers = self._read_float_registers(address, count, slave_address, "P/Q Total")
+        Citește Curenții și Tensiunile într-o SINGURĂ tranzacție.
+        Adresa Start: 4610 (Curenți)
+        Adresa Final: 4627 (Ultimul registru Tensiuni)
+        Total Count: 18 regiștri
+        """
+        start_addr = 4610
+        count = 18  # 6 (curenți) + 6 (gap) + 6 (tensiuni)
+
+        # Folosim funcția _read_registers existentă
+        registers = self._read_registers(start_addr, count, slave_address, "Date Complete (I+U)")
+
+        if not registers:
+            return None
 
         data = {}
-        if registers:
+        try:
             decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            data["P_Total"] = decoder.decode_32bit_float()
-            data["Q_Total"] = decoder.decode_32bit_float()
 
-        # Citim puterile pe fază (PL1, PL2, PL3) -  404711 (4710)
-        # registers_phase = self._read_float_registers(4710, 6, slave_address, "P Fază")
-        # if registers_phase:
-        #     decoder = BinaryPayloadDecoder.fromRegisters(registers_phase, byteorder=Endian.Big, wordorder=Endian.Big)
-        #     data["PL1"] = decoder.decode_32bit_float()
-        #     data["PL2"] = decoder.decode_32bit_float()
-        #     data["PL3"] = decoder.decode_32bit_float()
+            # 1. Decodificăm Curenții (primii 6 regiștri / 12 bytes)
+            data['L1_I'] = decoder.decode_32bit_float()
+            data['L2_I'] = decoder.decode_32bit_float()
+            data['L3_I'] = decoder.decode_32bit_float()
 
-        return data if (data.get("P_Total") is not None) else None
+            # 2. Sărim peste "gaura" de date (următorii 6 regiștri / 12 bytes)
+            decoder.skip_bytes(12)
 
-    def read_system_params(self, slave_address):
-        """Citește Frecvența și Factorul de Putere (Presupunem 404801 => 4800 0-based)."""
-        address = 4660
-        count = 4  # Frecvență (float), PF Total (float)
-        registers = self._read_float_registers(address, count, slave_address, "Frecvență/PF")
+            # 3. Decodificăm Tensiunile (următorii 6 regiștri / 12 bytes)
+            data['L1L2_U'] = decoder.decode_32bit_float()
+            data['L2L3_U'] = decoder.decode_32bit_float()
+            data['L3L1_U'] = decoder.decode_32bit_float()
 
-        if registers:
-            decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            freq = decoder.decode_32bit_float()
-            pf_total = decoder.decode_32bit_float()
-            return {"Frequency": freq, "PF_Total": pf_total}
-        return None
+            return data
+
+        except Exception as e:
+            log.error(f"Contor ID {slave_address}: Eroare decodare bloc: {e}")
+            return None

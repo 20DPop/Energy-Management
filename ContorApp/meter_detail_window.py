@@ -38,7 +38,6 @@ class MeterDetailWindow(QDialog):
         # (Omit codul repetitiv, dar ideea este de a reseta toate label_Detail_* )
         self.ui.label_Detail_IL1.setText("--- A")
         self.ui.label_Detail_UL1.setText("--- V")
-        self.ui.label_Detail_PL1.setText("--- kW")
         # etc.
 
     @Slot()

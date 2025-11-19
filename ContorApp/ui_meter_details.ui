@@ -14,8 +14,6 @@
    <string>Detalii Contor - ID [Dynamic]</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_main">
-
-   <!-- Titlu Contor Dinamic -->
    <item>
     <widget class="QLabel" name="label_MeterID_Title">
      <property name="font">
@@ -28,103 +26,225 @@
       <string>Contor Detalii (Slave ID: --)</string>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
    </item>
-
-   <!-- SECȚIUNEA 1: DATE ÎN TIMP REAL -->
    <item>
     <widget class="QGroupBox" name="groupBox_RealTime">
      <property name="title">
       <string>Date Instantanee</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_RealTime">
-      <!-- HEADERS -->
-      <item row="0" column="0"> <widget class="QLabel" name="label_Header_Phase"> <property name="font"> <font bold="true"/> </property> <property name="text"> <string>Fază</string> </property> </widget> </item>
-      <item row="0" column="1"> <widget class="QLabel" name="label_Header_Current"> <property name="font"> <font bold="true"/> </property> <property name="text"> <string>Curent (I) [A]</string> </property> </widget> </item>
-      <item row="0" column="2"> <widget class="QLabel" name="label_Header_Voltage"> <property name="font"> <font bold="true"/> </property> <property name="text"> <string>Tensiune (U) [V]</string> </property> </widget> </item>
-      <item row="0" column="3"> <widget class="QLabel" name="label_Header_Power"> <property name="font"> <font bold="true"/> </property> <property name="text"> <string>Putere Activă (P) [kW]</string> </property> </widget> </item>
-      <item row="0" column="4"> <widget class="QLabel" name="label_Header_Reactive"> <property name="font"> <font bold="true"/> </property> <property name="text"> <string>Putere Reactivă (Q) [kVAR]</string> </property> </widget> </item>
-
-      <!-- L1 -->
-      <item row="1" column="0"> <widget class="QLabel" name="label_Detail_L1_Text"> <property name="text"> <string>L1</string> </property> </widget> </item>
-      <item row="1" column="1"> <widget class="QLabel" name="label_Detail_IL1"> <property name="text"> <string>--- A</string> </property> </widget> </item>
-      <item row="1" column="2"> <widget class="QLabel" name="label_Detail_UL1"> <property name="text"> <string>--- V</string> </property> </widget> </item>
-      <item row="1" column="3"> <widget class="QLabel" name="label_Detail_PL1"> <property name="text"> <string>--- kW</string> </property> </widget> </item>
-      <item row="1" column="4"> <widget class="QLabel" name="label_Detail_QL1"> <property name="text"> <string>--- kVAR</string> </property> </widget> </item>
-
-      <!-- L2 -->
-      <item row="2" column="0"> <widget class="QLabel" name="label_Detail_L2_Text"> <property name="text"> <string>L2</string> </property> </widget> </item>
-      <item row="2" column="1"> <widget class="QLabel" name="label_Detail_IL2"> <property name="text"> <string>--- A</string> </property> </widget> </item>
-      <item row="2" column="2"> <widget class="QLabel" name="label_Detail_UL2"> <property name="text"> <string>--- V</string> </property> </widget> </item>
-      <item row="2" column="3"> <widget class="QLabel" name="label_Detail_PL2"> <property name="text"> <string>--- kW</string> </property> </widget> </item>
-      <item row="2" column="4"> <widget class="QLabel" name="label_Detail_QL2"> <property name="text"> <string>--- kVAR</string> </property> </widget> </item>
-
-      <!-- L3 -->
-      <item row="3" column="0"> <widget class="QLabel" name="label_Detail_L3_Text"> <property name="text"> <string>L3</string> </property> </widget> </item>
-      <item row="3" column="1"> <widget class="QLabel" name="label_Detail_IL3"> <property name="text"> <string>--- A</string> </property> </widget> </item>
-      <item row="3" column="2"> <widget class="QLabel" name="label_Detail_UL3"> <property name="text"> <string>--- V</string> </property> </widget> </item>
-      <item row="3" column="3"> <widget class="QLabel" name="label_Detail_PL3"> <property name="text"> <string>--- kW</string> </property> </widget> </item>
-      <item row="3" column="4"> <widget class="QLabel" name="label_Detail_QL3"> <property name="text"> <string>--- kVAR</string> </property> </widget> </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_Detail_L2_Text">
+        <property name="text">
+         <string>L2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_Detail_L1_Text">
+        <property name="text">
+         <string>L1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_Header_Voltage">
+        <property name="font">
+         <font/>
+        </property>
+        <property name="text">
+         <string>Tensiune (U) [V]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="label_Detail_UL3">
+        <property name="text">
+         <string>--- V</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_Detail_UL2">
+        <property name="text">
+         <string>--- V</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_Detail_L3_Text">
+        <property name="text">
+         <string>L3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_Header_Phase">
+        <property name="font">
+         <font/>
+        </property>
+        <property name="text">
+         <string>Fază</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_Detail_IL3">
+        <property name="text">
+         <string>--- A</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_Detail_IL1">
+        <property name="text">
+         <string>--- A</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_Header_Current">
+        <property name="font">
+         <font/>
+        </property>
+        <property name="text">
+         <string>Curent (I) [A]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_Detail_UL1">
+        <property name="text">
+         <string>--- V</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_Detail_IL2">
+        <property name="text">
+         <string>--- A</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-
-   <!-- SECȚIUNEA 2: TOTALURI ȘI PARAMETRI SISTEM -->
    <item>
     <widget class="QGroupBox" name="groupBox_Totals">
      <property name="title">
       <string>Totaluri și Parametri Sistem</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_Totals">
-      <item row="0" column="0"> <widget class="QLabel" name="label_TotalP_Text"> <property name="text"> <string>Putere Activă Totală (ΣP):</string> </property> </widget> </item>
-      <item row="0" column="1"> <widget class="QLabel" name="label_Detail_P_Total"> <property name="text"> <string>--- kW</string> </property> </widget> </item>
-
-      <item row="1" column="0"> <widget class="QLabel" name="label_TotalQ_Text"> <property name="text"> <string>Putere Reactivă Totală (ΣQ):</string> </property> </widget> </item>
-      <item row="1" column="1"> <widget class="QLabel" name="label_Detail_Q_Total"> <property name="text"> <string>--- kVAR</string> </property> </widget> </item>
-
-      <item row="0" column="2"> <widget class="QLabel" name="label_Freq_Text"> <property name="text"> <string>Frecvență:</string> </property> </widget> </item>
-      <item row="0" column="3"> <widget class="QLabel" name="label_Detail_Frequency"> <property name="text"> <string>--- Hz</string> </property> </widget> </item>
-
-      <item row="1" column="2"> <widget class="QLabel" name="label_PF_Text"> <property name="text"> <string>Factor Putere Total (PF):</string> </property> </widget> </item>
-      <item row="1" column="3"> <widget class="QLabel" name="label_Detail_PF_Total"> <property name="text"> <string>---</string> </property> </widget> </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_TotalP_Text">
+        <property name="text">
+         <string>Putere Activă Totală (ΣP):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_Detail_P_Total">
+        <property name="text">
+         <string>--- kW</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_TotalQ_Text">
+        <property name="text">
+         <string>Putere Reactivă Totală (ΣQ):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_Detail_Q_Total">
+        <property name="text">
+         <string>--- kVAR</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_Freq_Text">
+        <property name="text">
+         <string>Frecvență:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="label_Detail_Frequency">
+        <property name="text">
+         <string>--- Hz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_PF_Text">
+        <property name="text">
+         <string>Factor Putere Total (PF):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_Detail_PF_Total">
+        <property name="text">
+         <string>---</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-
-   <!-- SECȚIUNEA 3: SELECTARE PERIOADĂ -->
    <item>
     <widget class="QGroupBox" name="groupBox_History">
      <property name="title">
       <string>Vizualizare Istorică (Logare)</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_History">
-      <item row="0" column="0"> <widget class="QLabel" name="label_Start"> <property name="text"> <string>Data Start:</string> </property> </widget> </item>
-      <item row="0" column="1"> <widget class="QDateTimeEdit" name="dateTimeEdit_Start"/> </item>
-      <item row="1" column="0"> <widget class="QLabel" name="label_End"> <property name="text"> <string>Data Sfârșit:</string> </property> </widget> </item>
-      <item row="1" column="1"> <widget class="QDateTimeEdit" name="dateTimeEdit_End"/> </item>
-      <item row="2" column="0" colspan="2"> <widget class="QPushButton" name="pushButton_GenerateReport"> <property name="text"> <string>Generează Raport / Afișează Grafic</string> </property> </widget> </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_Start">
+        <property name="text">
+         <string>Data Start:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDateTimeEdit" name="dateTimeEdit_Start"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_End">
+        <property name="text">
+         <string>Data Sfârșit:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDateTimeEdit" name="dateTimeEdit_End"/>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="pushButton_GenerateReport">
+        <property name="text">
+         <string>Generează Raport / Afișează Grafic</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-
    <item>
     <widget class="QTextEdit" name="textEdit_HistoryOutput">
-     <property name="readOnly"> <bool>true</bool> </property>
-     <property name="placeholderText"> <string>Datele istorice vor fi afișate aici...</string> </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="placeholderText">
+      <string>Datele istorice vor fi afișate aici...</string>
+     </property>
     </widget>
    </item>
-
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QTableWidget</class>
-   <extends>QTableView</extends>
-   <header>qtablewidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
