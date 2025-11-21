@@ -107,7 +107,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Monitorizare Multi-Contor Modbus RTU", None))
-        self.label_Title.setText(QCoreApplication.translate("MainWindow", u"Monitorizare Re\u021bea Contoare Eaton PXR", None))
+        self.label_Title.setText(QCoreApplication.translate("MainWindow", u"Monitorizare Re\u021bea Contoare", None))
         self.label_Status.setText(QCoreApplication.translate("MainWindow", u"Status Re\u021bea: Deconectat", None))
         self.pushButton_Connect.setText(QCoreApplication.translate("MainWindow", u"Conectare la Magistrala Modbus", None))
         self.groupBox_MeterList.setTitle(QCoreApplication.translate("MainWindow", u"Lista Contoarelor (10 Unit\u0103\u021bi)", None))

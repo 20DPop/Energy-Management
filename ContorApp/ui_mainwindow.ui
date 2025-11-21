@@ -15,8 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-
-    <!-- TITLU ȘI STATUS GENERAL -->
     <item>
      <widget class="QLabel" name="label_Title">
       <property name="font">
@@ -26,10 +24,10 @@
        </font>
       </property>
       <property name="text">
-       <string>Monitorizare Rețea Contoare Eaton PXR</string>
+       <string>Monitorizare Rețea Contoare </string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -39,7 +37,7 @@
        <string>Status Rețea: Deconectat</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -62,8 +60,6 @@
       </property>
      </widget>
     </item>
-
-    <!-- LISTA CONTORILOR (Table Widget) -->
     <item>
      <widget class="QGroupBox" name="groupBox_MeterList">
       <property name="title">
@@ -100,8 +96,6 @@
       </layout>
      </widget>
     </item>
-
-    <!-- LOG COMUNICARE -->
     <item>
      <widget class="QGroupBox" name="groupBox_Log">
       <property name="title">
@@ -124,10 +118,18 @@
       </layout>
      </widget>
     </item>
-
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>850</width>
+     <height>33</height>
+    </rect>
+   </property>
+  </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
