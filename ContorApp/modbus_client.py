@@ -123,6 +123,45 @@ class ContorModbusClient:
             except Exception as e:
                 log.error(f"Contor ID {slave_address}: Eroare decodare tensiuni: {e}")
         return None
+
+    def read_meter_data_optimized(self, slave_address):
+        """
+        Citește Curenții (I), Tensiunile Fază-Nul (L-N) și Tensiunile Linie-Linie (L-L).
+        Adresa Start: 4610
+        Total Count: 18 regiștri
+        """
+        start_addr = 4610
+        count = 18
+
+        registers = self._read_registers(start_addr, count, slave_address, "Date Complete (I + U_LN + U_LL)")
+
+        if not registers:
+            return None
+
+        data = {}
+        try:
+            decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+
+            # 1. Curenți (4610-4615)
+            data['L1_I'] = decoder.decode_32bit_float()
+            data['L2_I'] = decoder.decode_32bit_float()
+            data['L3_I'] = decoder.decode_32bit_float()
+
+            # 2. Tensiuni L-N (4616-4621) - ACUM LE CITIM!
+            data['L1_N'] = decoder.decode_32bit_float()
+            data['L2_N'] = decoder.decode_32bit_float()
+            data['L3_N'] = decoder.decode_32bit_float()
+
+            # 3. Tensiuni L-L (4622-4627)
+            data['L1L2_U'] = decoder.decode_32bit_float()
+            data['L2L3_U'] = decoder.decode_32bit_float()
+            data['L3L1_U'] = decoder.decode_32bit_float()
+
+            return data
+
+        except Exception as e:
+            log.error(f"Contor ID {slave_address}: Eroare decodare bloc: {e}")
+            return None
     def read_meter_data_optimized(self, slave_address):
         """
         Citește Curenții și Tensiunile într-o SINGURĂ tranzacție.
